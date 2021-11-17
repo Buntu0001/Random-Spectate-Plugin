@@ -1,0 +1,8 @@
+name: Randomspectate
+version: '${project.version}'
+main: com.buntu.aicoding.randomspectate.Randomspectate
+description: Random Spectate Players
+commands:
+  관전:
+    description: 랜덤한 플레이어를 관전합니다.
+    usage: /관전 [player(optional)]
