@@ -22,17 +22,16 @@ public class CommandListener implements CommandExecutor {
         player.sendMessage(AlterColorCode(String.format("&e[관전] &a%s&f님으로부터의 관전을 종료합니다.", target_player.getDisplayName())));
 
         target_player.sendMessage(AlterColorCode(String.format("&e[관전] &a%s&f님으로부터의 관전이 종료되었습니다.", player.getDisplayName())));
-        player.setGameMode(GameMode.CREATIVE);
         player.setSpectatorTarget(null);
+        player.setGameMode(GameMode.CREATIVE);
         player.teleport(player_spectate_state.get(player).spectating_player_previous_location);
         player_spectate_state.remove(player);
         player_spectate_state.remove(target_player);
     }
 
     private void SpectatePlayer(Player player, Player target_player, Location previous_location) {
-        player.setGameMode(GameMode.SPECTATOR);
-        player.sendMessage(AlterColorCode(String.format("&e[관전] &a%s&f님에게 이동합니다.", target_player.getDisplayName())));
         Location target_location = target_player.getLocation();
+        player.setGameMode(GameMode.SPECTATOR);
         player.teleport(target_location);
         player.setSpectatorTarget(target_player);
         player.sendMessage(AlterColorCode(String.format("&e[관전] &a%s&f님의 관전을 시작합니다.", target_player.getDisplayName())));
@@ -72,7 +71,6 @@ public class CommandListener implements CommandExecutor {
                         return true;
                     }
                     Player target_player = Bukkit.getPlayer(args[0]);
-                    player.sendMessage(AlterColorCode(String.format("&e[관전] &a%s&f님으로 설정되었습니다.", target_player.getDisplayName())));
                     Location previous_location = player.getLocation();
                     SpectatePlayer(player, target_player, previous_location);
                     return true;
@@ -83,7 +81,7 @@ public class CommandListener implements CommandExecutor {
                 int player_count = player_list.size();
                 Random random = new Random();
                 Player target_player = player_list.get(random.nextInt(player_count));
-                player.sendMessage(AlterColorCode(String.format("&e[관전] &a%s&f님이 걸렸습니다!", target_player.getDisplayName())));
+                //player.sendMessage(AlterColorCode(String.format("&e[관전] &a%s&f님이 걸렸습니다!", target_player.getDisplayName())));
                 Location previous_location = player.getLocation();
                 SpectatePlayer(player, target_player, previous_location);
                 return true;
