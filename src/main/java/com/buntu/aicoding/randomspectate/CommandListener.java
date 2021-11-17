@@ -8,6 +8,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,10 @@ import static com.buntu.aicoding.randomspectate.util.AlterColorCode;
 import static com.buntu.aicoding.randomspectate.util.player_spectate_state;
 
 public class CommandListener implements CommandExecutor {
+    private static Plugin plugin;
+    public CommandListener(Plugin plugin_) {
+        plugin = plugin_;
+    }
     private void RemoveSpectate(Player player) {
         Player target_player = player_spectate_state.get(player).spectated_player;
         player.sendMessage(AlterColorCode(String.format("&e[관전] &a%s&f님으로부터의 관전을 종료합니다.", target_player.getDisplayName())));
@@ -29,20 +34,60 @@ public class CommandListener implements CommandExecutor {
         player_spectate_state.remove(target_player);
     }
 
+    private void RemoveSpectateWithoutChanging(Player player) {
+        Player target_player = player_spectate_state.get(player).spectated_player;
+        player.sendMessage(AlterColorCode(String.format("&e[관전] &a%s&f님으로부터의 관전을 종료합니다.", target_player.getDisplayName())));
+
+        target_player.sendMessage(AlterColorCode(String.format("&e[관전] &c%s&f님으로부터의 관전이 종료되었습니다.", player.getDisplayName())));
+        player_spectate_state.remove(player);
+        player_spectate_state.remove(target_player);
+    }
+
     private void SpectatePlayer(Player player, Player target_player, Location previous_location) {
-        Location target_location = target_player.getLocation();
-        player.setGameMode(GameMode.SPECTATOR);
-        player.teleport(target_location);
-        player.setSpectatorTarget(target_player);
-        player.sendMessage(AlterColorCode(String.format("&e[관전] &a%s&f님의 관전을 시작합니다.", target_player.getDisplayName())));
-        player.sendMessage(AlterColorCode(String.format("&e[관전] &f관전을 종료하고 싶다면 &6[/관전 종료] &f를 입력해 주세요.", target_player.getDisplayName())));
-        target_player.sendMessage(AlterColorCode(String.format("&e[관전] &f당신은 &c%s&f님으로부터 관전되고 있습니다.", player.getDisplayName())));
-        if (player_spectate_state.containsKey(player)) {
-            RemoveSpectate(player);
+        if (PlayerIsSpectating(target_player)) {
+            player.sendMessage(AlterColorCode("&e[관전] &f이미 관전 중인 플레이어는 관전할 수 없습니다."));
+        } else {
+            Location target_location = target_player.getLocation();
+            if (player_spectate_state.containsKey(player)) {
+                RemoveSpectateWithoutChanging(player);
+            }
+            player.setGameMode(GameMode.SPECTATOR);
+            player.teleport(target_location);
+            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
+                @Override
+                public void run() {
+                    player.setSpectatorTarget(target_player);
+                }
+            }, 5L);
+            player.sendMessage(AlterColorCode(String.format("&e[관전] &a%s&f님의 관전을 시작합니다.", target_player.getDisplayName())));
+            player.sendMessage(AlterColorCode(String.format("&e[관전] &f관전을 종료하고 싶다면 &6[/관전 종료] &f를 입력해 주세요.", target_player.getDisplayName())));
+            target_player.sendMessage(AlterColorCode(String.format("&e[관전] &f당신은 &c%s&f님으로부터 관전되고 있습니다.", player.getDisplayName())));
+            Spectate spectate = new Spectate(player, target_player, previous_location);
+            player_spectate_state.put(player, spectate);
+            player_spectate_state.put(target_player, spectate);
         }
-        Spectate spectate = new Spectate(player, target_player, previous_location);
-        player_spectate_state.put(player, spectate);
-        player_spectate_state.put(target_player, spectate);
+    }
+
+    private Boolean PlayerIsSpectating(Player player) {
+        if (player_spectate_state.containsKey(player)) {
+            if (player_spectate_state.get(player).spectating_player == player) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private Boolean PlayerIsSpectated(Player player) {
+        if (player_spectate_state.containsKey(player)) {
+            if (player_spectate_state.get(player).spectated_player == player) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -51,45 +96,51 @@ public class CommandListener implements CommandExecutor {
         //player.sendMessage(AlterColorCode("&e[관전] &f랜덤한 플레이어를 관전합니다."));
         if (label.equalsIgnoreCase("관전")) {
             if (player.isOp()) {
-                if (args.length == 1) {
-                    if (args[0].equalsIgnoreCase("종료")) {
-                        if (player_spectate_state.containsKey(player)) {
-                            if (player_spectate_state.get(player).spectating_player == player) {
-                                RemoveSpectate(player);
-                                return true;
+                if (!PlayerIsSpectated(player)) {
+                    if (args.length == 1) {
+                        if (args[0].equalsIgnoreCase("종료")) {
+                            if (player_spectate_state.containsKey(player)) {
+                                if (player_spectate_state.get(player).spectating_player == player) {
+                                    RemoveSpectate(player);
+                                    return true;
+                                } else {
+                                    player.sendMessage(AlterColorCode("&e[관전] &f당신은 관전 중이 아닙니다."));
+                                    return true;
+                                }
                             } else {
                                 player.sendMessage(AlterColorCode("&e[관전] &f당신은 관전 중이 아닙니다."));
                                 return true;
                             }
                         } else {
-                            player.sendMessage(AlterColorCode("&e[관전] &f당신은 관전 중이 아닙니다."));
+                            if (args[0].equalsIgnoreCase(player.getName())) {
+                                player.sendMessage(AlterColorCode("&e[관전] &f자기 자신을 관전할 수 없습니다."));
+                                return true;
+                            }
+                            Player target_player = Bukkit.getPlayer(args[0]);
+                            Location previous_location = player.getLocation();
+                            SpectatePlayer(player, target_player, previous_location);
                             return true;
                         }
                     } else {
-                        if (args[0].equalsIgnoreCase(player.getName())) {
-                            player.sendMessage(AlterColorCode("&e[관전] &f자기 자신을 관전할 수 없습니다."));
-                            return true;
-                        }
-                        Player target_player = Bukkit.getPlayer(args[0]);
+                        ArrayList<Player> player_list = new ArrayList<>();
+                        player_list.addAll(Bukkit.getOnlinePlayers());
+                        player_list.remove(player);
+                        int player_count = player_list.size();
+                        Random random = new Random();
+                        Player target_player = player_list.get(random.nextInt(player_count));
+                        //player.sendMessage(AlterColorCode(String.format("&e[관전] &a%s&f님이 걸렸습니다!", target_player.getDisplayName())));
                         Location previous_location = player.getLocation();
                         SpectatePlayer(player, target_player, previous_location);
                         return true;
                     }
                 } else {
-                    ArrayList<Player> player_list = new ArrayList<>();
-                    player_list.addAll(Bukkit.getOnlinePlayers());
-                    player_list.remove(player);
-                    int player_count = player_list.size();
-                    Random random = new Random();
-                    Player target_player = player_list.get(random.nextInt(player_count));
-                    //player.sendMessage(AlterColorCode(String.format("&e[관전] &a%s&f님이 걸렸습니다!", target_player.getDisplayName())));
-                    Location previous_location = player.getLocation();
-                    SpectatePlayer(player, target_player, previous_location);
+                    player.sendMessage(AlterColorCode("&e[관전] &f당신은 관전되는 중입니다."));
                     return true;
                 }
             }
         } else {
             player.sendMessage(AlterColorCode("&c[ERROR] &f이 명령어를 사용할 권한이 없습니다."));
+            return true;
         }
         return false;
     }

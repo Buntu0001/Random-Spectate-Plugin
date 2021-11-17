@@ -4,8 +4,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import static com.buntu.aicoding.randomspectate.util.AlterColorCode;
+
 import static com.buntu.aicoding.randomspectate.util.player_spectate_state;
+
 public class EventListener implements Listener {
     @EventHandler
     public void onPlayerCancelSpectate(PlayerTeleportEvent teleportEvent) {

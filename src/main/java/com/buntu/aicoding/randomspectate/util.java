@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 public class util {
     public static HashMap<Player, Spectate> player_spectate_state = new HashMap<>();
+
     public static String AlterColorCode(String message) {
         return ChatColor.translateAlternateColorCodes('&', message);
     }
