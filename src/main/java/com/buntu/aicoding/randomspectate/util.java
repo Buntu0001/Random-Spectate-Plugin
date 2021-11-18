@@ -127,6 +127,16 @@ public class util {
         player_list.remove(player);
         int player_count = player_list.size();
         Random random = new Random();
-        return player_list.get(random.nextInt(player_count));
+        Player target_player = player_list.get(random.nextInt(player_count));
+        while (true) {
+            if (PlayerIsSpectating(target_player)) {
+                player_list.remove(target_player);
+                player_count -= 1;
+                target_player = player_list.get(random.nextInt(player_count));
+            } else {
+                break;
+            }
+        }
+        return target_player;
     }
 }
