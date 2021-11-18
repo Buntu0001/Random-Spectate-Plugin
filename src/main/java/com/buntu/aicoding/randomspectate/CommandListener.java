@@ -76,8 +76,9 @@ public class CommandListener implements CommandExecutor {
                     return true;
                 }
             } catch (Exception ex) {
-                player.sendMessage("&c[ERROR] &f뭔가 잘못된 것 같은데요...");
+                player.sendMessage(AlterColorCode("&c[ERROR] &f뭔가 잘못된 것 같은데요..."));
                 ex.printStackTrace();
+                return true;
             }
         }
         return false;
