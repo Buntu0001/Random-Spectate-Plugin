@@ -3,9 +3,13 @@ package com.buntu.aicoding.randomspectate;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
-import static com.buntu.aicoding.randomspectate.util.player_spectate_state;
+import com.buntu.aicoding.randomspectate.CommandListener;
+
+import static com.buntu.aicoding.randomspectate.util.*;
 
 public class EventListener implements Listener {
     @EventHandler
@@ -17,6 +21,16 @@ public class EventListener implements Listener {
                     teleportEvent.setCancelled(true);
                 }
             }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent quitEvent) {
+        Player player = quitEvent.getPlayer();
+        if (PlayerIsSpectating(player) || PlayerIsRepeat(player)) {
+            RemoveOfflineSpectating(player);
+        } else if (PlayerIsSpectated(player)) {
+            RemoveOfflineSpectated(player);
         }
     }
 }
