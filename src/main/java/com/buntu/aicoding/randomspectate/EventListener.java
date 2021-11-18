@@ -28,9 +28,17 @@ public class EventListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent quitEvent) {
         Player player = quitEvent.getPlayer();
         if (PlayerIsSpectating(player) || PlayerIsRepeat(player)) {
-            RemoveOfflineSpectating(player);
+            try {
+                RemoveOfflineSpectating(player);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         } else if (PlayerIsSpectated(player)) {
-            RemoveOfflineSpectated(player);
+            try {
+                RemoveOfflineSpectated(player);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 }
