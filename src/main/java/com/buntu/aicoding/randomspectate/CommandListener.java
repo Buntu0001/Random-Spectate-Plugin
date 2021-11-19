@@ -32,18 +32,23 @@ public class CommandListener implements CommandExecutor {
                                     player.sendMessage(AlterColorCode("&e[관전] &f당신은 이미 관전 중입니다."));
                                     return true;
                                 } else {
-                                    player.sendMessage(AlterColorCode(String.format("&e[관전] &f자동 관전을 시작합니다. 자동 변경 시간은 &c%d&f초 입니다.", auto_change_interval)));
-                                    Integer task_id = Bukkit.getScheduler().scheduleSyncRepeatingTask(util.plugin, new Runnable() {
-                                        @Override
-                                        public void run() {
+                                    if (!CheckPlayerOnlyOne()) {
+                                        player.sendMessage(AlterColorCode(String.format("&e[관전] &f자동 관전을 시작합니다. 자동 변경 시간은 &c%d&f초 입니다.", auto_change_interval)));
+                                        Location previous_location = player.getLocation();
+                                        Integer task_id = Bukkit.getScheduler().scheduleSyncRepeatingTask(util.plugin, new Runnable() {
+                                            @Override
+                                            public void run() {
 
-                                            Player target_player = SelectRandomPlayer(player);
-                                            Location previous_location = player.getLocation();
-                                            SpectatePlayer(player, target_player, previous_location);
-                                        }
-                                    }, 0, 20L * auto_change_interval);
-                                    repeat_task_id.put(player, task_id);
-                                    return true;
+                                                Player target_player = SequentialSelectPlayer(player);
+                                                SpectatePlayer(player, target_player, previous_location);
+                                            }
+                                        }, 0, 20L * auto_change_interval);
+                                        repeat_task_id.put(player, task_id);
+                                        return true;
+                                    } else {
+                                        player.sendMessage(AlterColorCode("&e[관전] &f서버에 당신 혼자만 있네요...ㅠ"));
+                                        return true;
+                                    }
                                 }
                             } else {
                                 if (args[0].equalsIgnoreCase(player.getName())) {
@@ -55,17 +60,26 @@ public class CommandListener implements CommandExecutor {
                                     player.sendMessage(AlterColorCode("&e[관전] &f플레이어를 찾을 수 없습니다."));
                                     return true;
                                 }
-                                Player target_player = Bukkit.getPlayer(args[0]);
+                                if (!CheckPlayerOnlyOne()) {
+                                    Player target_player = Bukkit.getPlayer(args[0]);
+                                    Location previous_location = player.getLocation();
+                                    SpectatePlayer(player, target_player, previous_location);
+                                    return true;
+                                } else {
+                                    player.sendMessage(AlterColorCode("&e[관전] &f서버에 당신 혼자만 있네요...ㅠ"));
+                                    return true;
+                                }
+                            }
+                        } else {
+                            if (!CheckPlayerOnlyOne()) {
+                                Player target_player = SelectRandomPlayer(player);
                                 Location previous_location = player.getLocation();
                                 SpectatePlayer(player, target_player, previous_location);
                                 return true;
+                            } else {
+                                player.sendMessage(AlterColorCode("&e[관전] &f서버에 당신 혼자만 있네요...ㅠ"));
+                                return true;
                             }
-                        } else {
-
-                            Player target_player = SelectRandomPlayer(player);
-                            Location previous_location = player.getLocation();
-                            SpectatePlayer(player, target_player, previous_location);
-                            return true;
                         }
                     } else {
                         player.sendMessage(AlterColorCode("&e[관전] &f당신은 관전되는 중입니다."));
