@@ -1,6 +1,5 @@
 package com.buntu.aicoding.randomspectate;
 
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,7 +13,7 @@ import static com.buntu.aicoding.randomspectate.util.*;
 
 public class EventListener implements Listener {
     @EventHandler
-    public void onPlayerTeleport(PlayerTeleportEvent teleportEvent) {
+    public void onPlayerCancelSpectate(PlayerTeleportEvent teleportEvent) {
         if (teleportEvent.getCause() == PlayerTeleportEvent.TeleportCause.SPECTATE) {
             Player player = teleportEvent.getPlayer();
             if (player_spectate_state.containsKey(player)) {
